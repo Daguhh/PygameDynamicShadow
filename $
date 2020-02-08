@@ -1,0 +1,152 @@
+import numpy as np
+
+def line_intersec(S1, S2) :
+
+    test = False
+
+    p = S1[0]
+    r = S1[1] - S1[0]
+    q = S2[0]
+    s = S2[1] - S2[0]
+
+    N = np.cross((p-q),s)
+    D = np.cross(s,r)
+
+    intersec = S1[1,:]
+    if D==0 and N==0 :
+        intersec = S1[1,:]
+    elif D==0 and N!=0 :
+        intersec = S1[1,:]
+    else :
+        t = np.cross((p-q),s) / np.cross(s,r)
+        intersec  = p + r*t
+        test1 = np.argsort([intersec[0], S1[0,0], S1[1,0]])[1] == 0
+        test2 = np.argsort([intersec[1], S1[0,1], S1[1,1]])[1] == 0
+        test3 = np.argsort([intersec[0], S2[0,0], S2[1,0]])[1] == 0
+        test4 = np.argsort([intersec[1], S2[0,1], S2[1,1]])[1] == 0
+        if test1 and test2 and test3 and test4 :
+            test = True
+        else :
+            intersec = S1[1,:]
+
+    return test, intersec.astype(int)
+
+
+def get_interactions(self, source, occ) :
+    """ return all intersection between :
+            - raylight from source (angle, aperture; number_of_ray)
+            - segmennts of occ shape
+    """
+
+    # source parameter
+    pos = source.pos
+    angle = np.linspace(source.angle - source.aperture,
+                        source.angle + source.aperture,
+                        self.resolution)
+    r = source.lenght
+
+    # bloc parameter
+    segments = occ
+
+    intersections = list()
+
+    for theta in angle :
+        # for each theta return only one point, the closest one
+        closest_pt = []
+        smallest_dist = 2000
+
+        for sgm in segments :
+
+            # compute lightrays
+            light = np.array(
+                [[pos[0],                 pos[1]],
+                 [pos[0]+r*np.cos(theta), pos[1] + r*np.sin(theta)]])
+
+            # find intersection between lightray and segment
+            test, pt = line_intersec(light, sgm)
+
+            # keep the closest pt
+            dist = np.sqrt( (pt[1] - pos[1])**2  +  (pt[0] - pos[0])**2 )
+            if test and smallest_dist > dist :
+                smallest_dist = dist
+                closest_pt = pt
+
+        # if we don't find any intersection
+        if closest_pt ==  []:
+            closest_pt = pt
+
+        intersections.append(closest_pt)
+
+        return intersections
+
+
+def line_intersec_debug(S1, S2) :
+ #   print("SSSSSSSSSSSSSSS_intersection___SSSSSSSSSSSSSSS")
+    #print(S1)
+    #print(S2)
+    test = False
+
+    p = S1[0]
+    r = S1[1] - S1[0]
+    q = S2[0]
+    s = S2[1] - S2[0]
+
+    N = np.cross((p-q),s)
+    D = np.cross(s,r)
+
+    intersec = S1
+    if D==0 and N==0 :
+        #print("segments are colinear")
+        intersec = S1
+    elif D==0 and N!=0 :
+        #print("segments are parallel")
+        intersec = S1
+    else :
+        t = np.cross((p-q),s) / np.cross(s,r)
+        intersec  = p + r*t
+        test1 = np.argsort([intersec[0], S1[0,0], S1[1,0]])[1] == 0
+        test2 = np.argsort([intersec[1], S1[0,1], S1[1,1]])[1] == 0
+        test3 = np.argsort([intersec[0], S2[0,0], S2[1,0]])[1] == 0
+        test4 = np.argsort([intersec[1], S2[0,1], S2[1,1]])[1] == 0
+#        print(np.argsort([intersec[0], S1[0,0], S1[1,0]]))
+#        print(np.argsort([intersec[1], S1[0,1], S1[1,1]]))
+#        print(np.argsort([intersec[0], S2[0,0], S2[1,0]]))
+#        print(np.argsort([intersec[1], S2[0,1], S2[1,1]]))
+#        print("intersec = " + str(intersec))
+        #temp = input("mmmmmmmmmmmmmmmmmmmmmmmmmmm")
+        if test1 and test2 and test3 and test4 :
+#            print("===========================")
+#            print(np.argsort([intersec[0], S1[0,0], S1[1,0]]))
+#            print(np.argsort([intersec[1], S1[0,1], S1[1,1]]))
+#            print(np.argsort([intersec[0], S2[0,0], S2[1,0]]))
+#            print(np.argsort([intersec[1], S2[0,1], S2[1,1]]))
+#            print("point is on segment")
+#            print(S1)
+#            print(S2)
+            test = True
+#            print(intersec)
+#            print("****************************************")
+            intersec = np.array([[S1[0,0],S1[0,1]],[intersec[0],intersec[1]]])
+        else :
+            #intersec = np.array([[S1[0,0],S1[0,1]],[intersec[0],intersec[1]]])
+            intersec=S1
+            #print("point not on segment")
+            pass
+
+    #print(test)
+    #print(intersec)
+    return test, intersec.astype(int)
+
+
+if __name__ == '__main__' :
+    a = np.array([[10,15], [30,1190]])
+    b = np.array([[10,50],[15,100]])
+    from matplotlib import pyplot as plt
+    figure = plt.plot(a[:,0],a[:,1])
+    figure2 = plt.plot(b[:,0],b[:,1])
+    test, vect = line_intersec(a,b)
+    print(test)
+    print(vect)
+
+    plt.show()
+

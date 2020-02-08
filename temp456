@@ -1,0 +1,13 @@
+
+        if dr == "LEFT" :
+            d = [-1,0]
+        elif dr == "RIGHT" :
+            d = [1,0]
+        elif dr == "UP" :
+            d = [0,-1]
+        elif dr == "DOWN" :
+            d = [1,1]
+
+        self.real_pos = (self.real_pos[0] + d[0],
+                         self.real_pos[1] + d[1])
+
